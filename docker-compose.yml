@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: node-server-container
     ports:
-      - "5000:5000" # Map host:container
+      - "5000:5000"
     restart: always
     networks:
       - app_network
