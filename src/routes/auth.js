@@ -45,7 +45,7 @@ router.post("/register", async (req, res) => {
       password,
       passwordConfirm,
       name,
-      role,
+      role: "user",
       verified: false,
       verificationToken: token,
       verificationExpiry: expiry,
