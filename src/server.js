@@ -19,7 +19,11 @@ app.use("/", authRoutes);
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", credentials: true },
+  cors: {
+    origin: "https://home.philippinesheadline.com",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 // ✅ Authenticate each socket connection using JWT
