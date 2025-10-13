@@ -5,9 +5,7 @@ import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import { JWT_SECRET } from "./config.js";
-import dotenv from "dotenv";
 
-dotenv.config();
 const app = express();
 
 // ----- Middleware -----
@@ -22,7 +20,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: "https://home.philippinesheadline.com",
     methods: ["GET", "POST"],
     credentials: true,
   },
