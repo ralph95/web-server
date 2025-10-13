@@ -45,13 +45,10 @@ io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.user);
 
   socket.on("send_message", (msg) => {
-    console.log(`Message from ${socket.user.email}:`, msg);
+    console.log(`📨 Message received:`, msg);
 
-    // broadcast to everyone
-    io.emit("receive_message", {
-      user: socket.user.email,
-      text: msg,
-    });
+    // Broadcast what the frontend sent
+    io.emit("receive_message", msg);
   });
 
   socket.on("disconnect", () => {
