@@ -9,18 +9,20 @@ const router = express.Router();
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     // Authenticate user with PocketBase
     const authData = await pb
       .collection("users")
       .authWithPassword(email, password);
 
+    const expiresIn = rememberMe ? "30d" : "1h";
+
     // Create JWT
     const token = jwt.sign(
       { id: authData.record.id, email: authData.record.email },
       JWT_SECRET,
-      { expiresIn: "10h" }
+      { expiresIn }
     );
 
     res.json({ token, user: authData.record });
