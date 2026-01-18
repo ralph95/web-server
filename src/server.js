@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import { JWT_SECRET } from "./config.js";
+import imageRoutes from "./routes/imageRoutes.js";
 
 // ----- OAUTH2 Google -----
 import passport from "passport";
@@ -30,6 +31,8 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
+app.use("/images", imageRoutes);
 
 // ✅ Authenticate each socket connection using JWT
 io.use((socket, next) => {
@@ -68,7 +71,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true, sameSite: "none" }, // important for HTTPS + Cloudflare
-  })
+  }),
 );
 app.use(passport.initialize());
 app.use(passport.session());
@@ -92,8 +95,8 @@ passport.use(
       };
 
       return done(null, userData);
-    }
-  )
+    },
+  ),
 );
 
 // ----- Passport session handlers -----
@@ -102,7 +105,7 @@ passport.deserializeUser((user, done) => done(null, user));
 
 app.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["openid", "email", "profile"] })
+  passport.authenticate("google", { scope: ["openid", "email", "profile"] }),
 );
 
 app.get(
@@ -118,20 +121,20 @@ app.get(
         photo: req.user.photo,
       },
       JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     console.log("✅ Google login success. Redirecting with token...");
 
     // ✅ Redirect to frontend (dashboard) with JWT as query param
     res.redirect(
-      `https://home.philippinesheadline.com/dashboard?token=${token}`
+      `https://home.philippinesheadline.com/dashboard?token=${token}`,
     );
-  }
+  },
 );
 
 // ----- Start HTTP + WS server -----
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`Server running on http://localhost:${PORT}`),
 );
