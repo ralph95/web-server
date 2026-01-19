@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import { JWT_SECRET } from "./config.js";
-import imageRoutes from "./routes/imageRoutes.js";
+import imageRoutes from "./routes/ImageDisplayRoutes.js";
 
 // ----- OAUTH2 Google -----
 import passport from "passport";
@@ -32,6 +32,7 @@ const io = new Server(server, {
   },
 });
 
+// Fetch Images Display on HomePage
 app.use("/images", imageRoutes);
 
 // ✅ Authenticate each socket connection using JWT

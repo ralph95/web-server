@@ -1,5 +1,5 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { s3 } from "../config/aws.config.js";
+import { s3 } from "../../config/aws.config.js";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function getImageUrl(key) {
