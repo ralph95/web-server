@@ -8,6 +8,9 @@ export const pb = new PocketBase(POCKETBASE_URL);
 // Server-wide superuser login
 export async function loginSuperuser() {
   try {
+    console.log("POCKETBASE_URL:", process.env.POCKETBASE_URL);
+    console.log("USER_NAME:", process.env.USER_NAME);
+    console.log("USER_PASSWORD:", process.env.USER_PASSWORD);
     await pb.admins.authWithPassword(
       process.env.USER_NAME, // 🔑 admin email
       process.env.USER_PASSWORD, // 🔑 admin password
