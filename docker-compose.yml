@@ -7,10 +7,9 @@ services:
     ports:
       - "5000:5000"
     restart: always
-    networks:
-      - app_network
+    network_mode: "host"
     environment:
-      - POCKETBASE_URL=http://192.168.1.150:8090
+      - POCKETBASE_URL=http://127.0.0.1:8090
 
 networks:
   app_network:
