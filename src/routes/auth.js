@@ -11,13 +11,10 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
 
-    console.log("Login attempt:", { email, password });
     // Authenticate user with PocketBase
     const authData = await pb
       .collection("users")
       .authWithPassword(email, password);
-
-    console.log("Auth success:", authData);
 
     const expiresIn = rememberMe ? "30d" : "1h";
 
@@ -30,7 +27,6 @@ router.post("/login", async (req, res) => {
 
     res.json({ token, user: authData.record });
   } catch (err) {
-    console.error("Login error:", err);
     res.status(401).json({ error: "Invalid credentials" });
   }
 });
