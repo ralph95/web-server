@@ -11,10 +11,13 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
 
+    console.log("Login attempt:", { email, password });
     // Authenticate user with PocketBase
     const authData = await pb
       .collection("users")
       .authWithPassword(email, password);
+
+    console.log("Auth success:", authData);
 
     const expiresIn = rememberMe ? "30d" : "1h";
 
@@ -22,11 +25,12 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: authData.record.id, email: authData.record.email },
       JWT_SECRET,
-      { expiresIn }
+      { expiresIn },
     );
 
     res.json({ token, user: authData.record });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(401).json({ error: "Invalid credentials" });
   }
 });
@@ -80,7 +84,7 @@ router.get("/verify", async (req, res) => {
     try {
       await pb.admins.authWithPassword(
         process.env.USER_NAME, // 🔑 admin email
-        process.env.USER_PASSWORD // 🔑 admin password
+        process.env.USER_PASSWORD, // 🔑 admin password
       );
     } catch (authErr) {
       console.error("❌ Admin auth failed:", authErr);
@@ -186,7 +190,7 @@ router.get("/get-all", async (req, res) => {
     // Authenticate as admin (bypass collection rules)
     await pb.admins.authWithPassword(
       process.env.USER_NAME, // 🔑 admin email
-      process.env.USER_PASSWORD // 🔑 admin password
+      process.env.USER_PASSWORD, // 🔑 admin password
     );
 
     // Fetch all users from your "users" collection
