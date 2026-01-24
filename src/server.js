@@ -66,16 +66,33 @@ io.on("connection", (socket) => {
 });
 
 // ----- OAUTH2 events -----
+console.log("🚀 OAuth setup starting...");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret123",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true, sameSite: "none" }, // important for HTTPS + Cloudflare
+    cookie: {
+      secure: true,
+      sameSite: "none",
+    }, // important for HTTPS + Cloudflare
   }),
 );
+
+console.log("✅ express-session initialized");
+
 app.use(passport.initialize());
+console.log("✅ passport.initialize() loaded");
+
 app.use(passport.session());
+console.log("✅ passport.session() loaded");
+
+console.log("🔍 GOOGLE_CLIENT_ID exists:", !!process.env.GOOGLE_CLIENT_ID);
+console.log(
+  "🔍 GOOGLE_CLIENT_SECRET exists:",
+  !!process.env.GOOGLE_CLIENT_SECRET,
+);
 
 passport.use(
   new GoogleStrategy(
@@ -85,35 +102,40 @@ passport.use(
       callbackURL: "https://home.philippinesheadline.com/auth/google/callback",
     },
     (_, __, profile, done) => {
-      console.log("🔹 Google profile:", profile);
-
-      // You can store or find the user in your database here
+      console.log("Google profile:", profile);
       const userData = {
         id: profile.id,
         name: profile.displayName,
         email: profile.emails?.[0]?.value,
         photo: profile.photos?.[0]?.value,
       };
-
       return done(null, userData);
     },
   ),
 );
 
 // ----- Passport session handlers -----
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+passport.serializeUser((user, done) => {
+  console.log("📦 serializeUser called:", user?.id);
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  console.log("📤 deserializeUser called:", user?.id);
+  done(null, user);
+});
 
 app.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["openid", "email", "profile"] }),
+  passport.authenticate("google", {
+    scope: ["openid", "email", "profile"],
+  }),
 );
 
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    // ✅ Generate a JWT after successful Google login
     const token = jwt.sign(
       {
         id: req.user.id,
@@ -124,10 +146,6 @@ app.get(
       JWT_SECRET,
       { expiresIn: "1d" },
     );
-
-    console.log("✅ Google login success. Redirecting with token...");
-
-    // ✅ Redirect to frontend (dashboard) with JWT as query param
     res.redirect(
       `https://home.philippinesheadline.com/dashboard?token=${token}`,
     );
