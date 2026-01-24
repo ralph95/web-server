@@ -4,6 +4,7 @@ import { pb } from "../pocketbase.js";
 import { JWT_SECRET } from "../config.js";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/email.js";
+import { defineAbilityFor } from "../auth/Ability.js";
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ router.post("/login", async (req, res) => {
       .collection("users")
       .authWithPassword(email, password);
 
+    const user = authData.record;
+
     const expiresIn = rememberMe ? "30d" : "1h";
 
     // Create JWT
@@ -25,7 +28,8 @@ router.post("/login", async (req, res) => {
       { expiresIn },
     );
 
-    res.json({ token, user: authData.record });
+    // Send response
+    res.json({ token, user });
   } catch (err) {
     res.status(401).json({ error: "Invalid credentials" });
   }
@@ -34,7 +38,7 @@ router.post("/login", async (req, res) => {
 // REGISTER
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, passwordConfirm, name, role } = req.body;
+    const { email, password, passwordConfirm, name } = req.body;
 
     // generate unique token per request
     const token = crypto.randomBytes(32).toString("hex");
@@ -47,7 +51,6 @@ router.post("/register", async (req, res) => {
       password,
       passwordConfirm,
       name,
-      role: "user",
       verified: false,
       verificationToken: token,
       verificationExpiry: expiry,
@@ -146,7 +149,7 @@ router.get("/verify", async (req, res) => {
 // UPDATE USER (self-update only)
 router.post("/update", async (req, res) => {
   try {
-    const { email, password, passwordConfirm, name, role, currentPassword } =
+    const { email, password, passwordConfirm, name, currentPassword } =
       req.body;
 
     // 1. Authenticate the user with their current password
@@ -166,7 +169,6 @@ router.post("/update", async (req, res) => {
       password,
       passwordConfirm,
       name,
-      role,
       oldPassword: currentPassword,
     });
 
