@@ -49,12 +49,17 @@ router.get(
 // Google Callback
 router.get(
   "/google/callback",
-  (req, res, next) => {
-    next();
-  },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("google.com");
+    const user = req.user;
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
+
+    res.redirect(`${process.env.FRONTEND_URL}/oauth-success?token=${token}`);
   },
 );
 
