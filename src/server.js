@@ -66,44 +66,6 @@ SetupAuth(app);
 
 // ----- START GOOGLE LOGIN -----
 app.use("/auth", authRoutes);
-// app.get(
-//   "/auth/google",
-//   (req, res, next) => {
-//     console.log("🔐 /auth/google HIT");
-//     next();
-//   },
-//   passport.authenticate("google", {
-//     scope: ["openid", "email", "profile"], // ✅ REQUIRED
-//   }),
-// );
-
-// // ----- GOOGLE CALLBACK -----
-// app.get(
-//   "/auth/google/callback",
-//   (req, res, next) => {
-//     console.log("🔄 /auth/google/callback HIT");
-//     next();
-//   },
-//   passport.authenticate("google", { failureRedirect: "/" }),
-//   (req, res) => {
-//     console.log("✅ Google login SUCCESS", req.user);
-
-//     const token = jwt.sign(
-//       {
-//         id: req.user.id,
-//         name: req.user.name,
-//         email: req.user.email,
-//         photo: req.user.photo,
-//       },
-//       JWT_SECRET,
-//       { expiresIn: "1d" },
-//     );
-
-//     console.log("🔑 JWT created, redirecting user");
-
-//     res.redirect(`https://home.philippinesheadline.com/main`);
-//   },
-// );
 
 // ----- Start HTTP + WS server -----
 const PORT = process.env.PORT || 5000;

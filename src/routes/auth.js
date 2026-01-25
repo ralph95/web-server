@@ -50,27 +50,11 @@ router.get(
 router.get(
   "/google/callback",
   (req, res, next) => {
-    console.log("🔄 /auth/google/callback HIT");
     next();
   },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    console.log("✅ Google login SUCCESS", req.user);
-
-    const token = jwt.sign(
-      {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        photo: req.user.photo,
-      },
-      JWT_SECRET,
-      { expiresIn: "1d" },
-    );
-
-    console.log("🔑 JWT created, redirecting user");
-
-    res.redirect(`${process.env.FRONTEND_URL}/main?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}`);
   },
 );
 
