@@ -2,9 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { pb } from "../pocketbase.js";
 import { JWT_SECRET } from "../config.js";
-import crypto from "crypto";
-import { sendVerificationEmail } from "../utils/email.js";
-import { defineAbilityFor } from "../auth/Ability.js";
+import { AuthController } from "../controllers/AuthController.js";
 
 const router = express.Router();
 
@@ -36,39 +34,7 @@ router.post("/login", async (req, res) => {
 });
 
 // REGISTER
-router.post("/register", async (req, res) => {
-  try {
-    const { email, password, passwordConfirm, name } = req.body;
-
-    // generate unique token per request
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-    // Create user in PocketBase "users" collection
-    const normalizedEmail = email.trim().toLowerCase();
-    const newUser = await pb.collection("users").create({
-      email: normalizedEmail,
-      password,
-      passwordConfirm,
-      name,
-      verified: false,
-      verificationToken: token,
-      verificationExpiry: expiry,
-      emailVisibility: true,
-    });
-
-    // send email with token
-    await sendVerificationEmail(email, token);
-
-    res.status(201).json({
-      message: "User registered successfully",
-      user: newUser,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: err.message || "Failed to register user" });
-  }
-});
+router.post("/register", AuthController.register);
 
 // ✅ Verify email route (with admin auth)
 router.get("/verify", async (req, res) => {

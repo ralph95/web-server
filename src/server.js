@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import { JWT_SECRET } from "./config.js";
 import imageRoutes from "./routes/ImageDisplayRoutes.js";
+import { SetupAuth } from "./auth/AuthSetup.js";
 
 // ----- OAUTH2 Google -----
 import passport from "passport";
@@ -66,76 +67,80 @@ io.on("connection", (socket) => {
 });
 
 // ----- OAUTH2 events -----
-console.log("🚀 OAuth setup starting...");
+// REQUIRED for Cloudflare / HTTPS
+// app.set("trust proxy", 1);
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret123",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: true,
-      sameSite: "none",
-    }, // important for HTTPS + Cloudflare
-  }),
-);
+// // ----- SESSION -----
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET || "secret123",
+//     resave: false,
+//     saveUninitialized: false, // better practice
+//     cookie: {
+//       secure: true,
+//       sameSite: "none",
+//     },
+//   }),
+// );
 
-console.log("✅ express-session initialized");
+// // ----- GOOGLE STRATEGY -----
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: "https://home.philippinesheadline.com/auth/google/callback",
+//     },
+//     (accessToken, refreshToken, profile, done) => {
+//       const userData = {
+//         id: profile.id,
+//         name: profile.displayName,
+//         email: profile.emails?.[0]?.value,
+//         photo: profile.photos?.[0]?.value,
+//       };
 
-app.use(passport.initialize());
-console.log("✅ passport.initialize() loaded");
+//       return done(null, userData);
+//     },
+//   ),
+// );
 
-app.use(passport.session());
-console.log("✅ passport.session() loaded");
+// // ----- SESSION SERIALIZATION -----
+// passport.serializeUser((user, done) => {
+//   console.log("📦 serializeUser:", user.id);
+//   done(null, user);
+// });
 
-console.log("🔍 GOOGLE_CLIENT_ID exists:", !!process.env.GOOGLE_CLIENT_ID);
-console.log(
-  "🔍 GOOGLE_CLIENT_SECRET exists:",
-  !!process.env.GOOGLE_CLIENT_SECRET,
-);
+// passport.deserializeUser((user, done) => {
+//   console.log("📤 deserializeUser:", user.id);
+//   done(null, user);
+// });
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://home.philippinesheadline.com/auth/google/callback",
-    },
-    (_, __, profile, done) => {
-      console.log("Google profile:", profile);
-      const userData = {
-        id: profile.id,
-        name: profile.displayName,
-        email: profile.emails?.[0]?.value,
-        photo: profile.photos?.[0]?.value,
-      };
-      return done(null, userData);
-    },
-  ),
-);
+// Setup Passport, sessions, GoogleStrategy
+SetupAuth(app);
 
-// ----- Passport session handlers -----
-passport.serializeUser((user, done) => {
-  console.log("📦 serializeUser called:", user?.id);
-  done(null, user);
-});
-
-passport.deserializeUser((user, done) => {
-  console.log("📤 deserializeUser called:", user?.id);
-  done(null, user);
-});
-
+// ----- START GOOGLE LOGIN (THIS FIXES SCOPE ERROR) -----
 app.get(
   "/auth/google",
+  (req, res, next) => {
+    console.log("🔐 /auth/google HIT");
+    next();
+  },
   passport.authenticate("google", {
-    scope: ["openid", "email", "profile"],
+    scope: ["openid", "email", "profile"], // ✅ REQUIRED
   }),
 );
 
+// ----- GOOGLE CALLBACK -----
 app.get(
   "/auth/google/callback",
+  (req, res, next) => {
+    console.log("🔄 /auth/google/callback HIT");
+    next();
+  },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
+    console.log("✅ Google login SUCCESS", req.user);
+
     const token = jwt.sign(
       {
         id: req.user.id,
@@ -146,6 +151,9 @@ app.get(
       JWT_SECRET,
       { expiresIn: "1d" },
     );
+
+    console.log("🔑 JWT created, redirecting user");
+
     res.redirect(
       `https://home.philippinesheadline.com/dashboard?token=${token}`,
     );
