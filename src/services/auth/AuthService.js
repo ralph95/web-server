@@ -42,11 +42,8 @@ export const AuthService = {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Check if user already exists
-    // Check if user already exists
-    console.log("Email:", normalizedEmail);
     let user = await UserRepository.findUserByEmail(normalizedEmail);
     if (user) return user;
-    console.log("User exists, logging in:", user);
 
     // Setting User Role
     const role = await RoleRepository.findByName("user");
