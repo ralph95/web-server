@@ -61,7 +61,7 @@ export const AuthService = {
       name,
       password: randomGooglePassword,
       passwordConfirm: randomGooglePassword,
-      verified: true,
+      verified: false,
       authProvider: "google",
       role_id: role.id,
       emailVisibility: true,
