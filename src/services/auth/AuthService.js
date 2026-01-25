@@ -53,12 +53,14 @@ export const AuthService = {
       throw new Error("Default role 'user' not found");
     }
 
+    const randomGooglePassword = crypto.randomBytes(16).toString("hex");
+
     // Create new Google user
     const newUser = await UserRepository.createUser({
       email: normalizedEmail,
       name,
-      password: crypto.randomBytes(16).toString("hex"),
-      passwordConfirm: crypto.randomBytes(16).toString("hex"),
+      password: randomGooglePassword,
+      passwordConfirm: randomGooglePassword,
       verified: true,
       authProvider: "google",
       role_id: role.id,
