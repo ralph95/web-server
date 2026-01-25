@@ -36,7 +36,12 @@ export const SetupAuth = (app) => {
         try {
           const email = profile.emails?.[0]?.value;
           const name = profile.displayName;
-
+          console.log("🟢 GoogleStrategy HIT");
+          console.log(
+            "👤 Profile:",
+            profile.emails?.[0]?.value,
+            profile.displayName,
+          );
           // call your service to register or find user
           const user = await AuthService.registerGoogleUser({ email, name });
 
