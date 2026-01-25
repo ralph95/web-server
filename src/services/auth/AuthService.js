@@ -57,8 +57,8 @@ export const AuthService = {
     const newUser = await UserRepository.createUser({
       email: normalizedEmail,
       name,
-      password: "",
-      passwordConfirm: "",
+      password: "GoogleRegister@12345",
+      passwordConfirm: "GoogleRegister@12345",
       verified: true,
       authProvider: "google",
       role_id: role.id,
