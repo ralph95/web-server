@@ -13,9 +13,12 @@ export const UserRepository = {
     }
   },
   findUserByEmail: async (email) => {
+    const normalizedEmail = email.trim().toLowerCase();
     try {
-      return await pb.collection("users").getFirstListItem(`email="${email}"`);
-    } catch {
+      return await pb
+        .collection("users")
+        .getFirstListItem(`email='${normalizedEmail}'`);
+    } catch (err) {
       return null;
     }
   },
