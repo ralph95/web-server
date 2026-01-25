@@ -1,6 +1,7 @@
 import session from "express-session";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { AuthService } from "../services/auth/AuthService.js"; //
 
 export const SetupAuth = (app) => {
   // REQUIRED for Cloudflare / HTTPS
@@ -31,15 +32,20 @@ export const SetupAuth = (app) => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`,
       },
-      (accessToken, refreshToken, profile, done) => {
-        const userData = {
-          id: profile.id,
-          name: profile.displayName,
-          email: profile.emails?.[0]?.value,
-          photo: profile.photos?.[0]?.value,
-        };
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          const name = profile.displayName;
 
-        return done(null, userData);
+          // call your service to register or find user
+          const user = await AuthService.registerGoogleUser({ email, name });
+
+          // done passes the user to Passport
+          return done(null, user);
+        } catch (err) {
+          console.error("GoogleStrategy error:", err);
+          return done(err, null);
+        }
       },
     ),
   );
