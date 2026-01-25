@@ -54,7 +54,7 @@ router.get(
   },
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("google.com");
+    res.redirect(`${process.env.FRONTEND_URL}`);
   },
 );
 
