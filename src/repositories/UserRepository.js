@@ -15,10 +15,14 @@ export const UserRepository = {
   findUserByEmail: async (email) => {
     const normalizedEmail = email.trim().toLowerCase();
     try {
-      return await pb
+      console.log("Looking for user with email:", normalizedEmail);
+      const user = await pb
         .collection("users")
-        .getFirstListItem(`email='${normalizedEmail}'`);
+        .getFirstListItem(`email = '${normalizedEmail}'`);
+      console.log("Found user:", user);
+      return user;
     } catch (err) {
+      console.error("findUserByEmail error:", err);
       return null;
     }
   },
