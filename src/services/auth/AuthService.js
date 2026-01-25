@@ -38,14 +38,13 @@ export const AuthService = {
 
     return newUser;
   },
-  registerGoogleUser: async ({ email, name }) => {
+  registerLoginGoogleUser: async ({ email, name }) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Check if user already exists
-    const existingUser = await UserRepository.findUserByEmail(normalizedEmail);
-    if (existingUser) {
-      return existingUser;
-    }
+    // Check if user already exists
+    let user = await UserRepository.findUserByEmail(normalizedEmail);
+    if (user) return user;
 
     // Setting User Role
     const role = await RoleRepository.findByName("user");
