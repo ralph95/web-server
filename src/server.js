@@ -8,11 +8,6 @@ import { JWT_SECRET } from "./config.js";
 import imageRoutes from "./routes/ImageDisplayRoutes.js";
 import { SetupAuth } from "./auth/AuthSetup.js";
 
-// ----- OAUTH2 Google -----
-import passport from "passport";
-import session from "express-session";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-
 const app = express();
 
 // ----- Middleware -----
@@ -66,99 +61,49 @@ io.on("connection", (socket) => {
   });
 });
 
-// ----- OAUTH2 events -----
-// REQUIRED for Cloudflare / HTTPS
-// app.set("trust proxy", 1);
-
-// // ----- SESSION -----
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET || "secret123",
-//     resave: false,
-//     saveUninitialized: false, // better practice
-//     cookie: {
-//       secure: true,
-//       sameSite: "none",
-//     },
-//   }),
-// );
-
-// // ----- GOOGLE STRATEGY -----
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: process.env.GOOGLE_CLIENT_ID,
-//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//       callbackURL: "https://home.philippinesheadline.com/auth/google/callback",
-//     },
-//     (accessToken, refreshToken, profile, done) => {
-//       const userData = {
-//         id: profile.id,
-//         name: profile.displayName,
-//         email: profile.emails?.[0]?.value,
-//         photo: profile.photos?.[0]?.value,
-//       };
-
-//       return done(null, userData);
-//     },
-//   ),
-// );
-
-// // ----- SESSION SERIALIZATION -----
-// passport.serializeUser((user, done) => {
-//   console.log("📦 serializeUser:", user.id);
-//   done(null, user);
-// });
-
-// passport.deserializeUser((user, done) => {
-//   console.log("📤 deserializeUser:", user.id);
-//   done(null, user);
-// });
-
 // Setup Passport, sessions, GoogleStrategy
 SetupAuth(app);
 
-// ----- START GOOGLE LOGIN (THIS FIXES SCOPE ERROR) -----
-app.get(
-  "/auth/google",
-  (req, res, next) => {
-    console.log("🔐 /auth/google HIT");
-    next();
-  },
-  passport.authenticate("google", {
-    scope: ["openid", "email", "profile"], // ✅ REQUIRED
-  }),
-);
+// ----- START GOOGLE LOGIN -----
+app.use("/auth", authRoutes);
+// app.get(
+//   "/auth/google",
+//   (req, res, next) => {
+//     console.log("🔐 /auth/google HIT");
+//     next();
+//   },
+//   passport.authenticate("google", {
+//     scope: ["openid", "email", "profile"], // ✅ REQUIRED
+//   }),
+// );
 
-// ----- GOOGLE CALLBACK -----
-app.get(
-  "/auth/google/callback",
-  (req, res, next) => {
-    console.log("🔄 /auth/google/callback HIT");
-    next();
-  },
-  passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => {
-    console.log("✅ Google login SUCCESS", req.user);
+// // ----- GOOGLE CALLBACK -----
+// app.get(
+//   "/auth/google/callback",
+//   (req, res, next) => {
+//     console.log("🔄 /auth/google/callback HIT");
+//     next();
+//   },
+//   passport.authenticate("google", { failureRedirect: "/" }),
+//   (req, res) => {
+//     console.log("✅ Google login SUCCESS", req.user);
 
-    const token = jwt.sign(
-      {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        photo: req.user.photo,
-      },
-      JWT_SECRET,
-      { expiresIn: "1d" },
-    );
+//     const token = jwt.sign(
+//       {
+//         id: req.user.id,
+//         name: req.user.name,
+//         email: req.user.email,
+//         photo: req.user.photo,
+//       },
+//       JWT_SECRET,
+//       { expiresIn: "1d" },
+//     );
 
-    console.log("🔑 JWT created, redirecting user");
+//     console.log("🔑 JWT created, redirecting user");
 
-    res.redirect(
-      `https://home.philippinesheadline.com/dashboard?token=${token}`,
-    );
-  },
-);
+//     res.redirect(`https://home.philippinesheadline.com/main`);
+//   },
+// );
 
 // ----- Start HTTP + WS server -----
 const PORT = process.env.PORT || 5000;
