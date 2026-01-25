@@ -36,8 +36,13 @@ export const SetupAuth = (app) => {
         try {
           const email = profile.emails?.[0]?.value;
           const name = profile.displayName;
-          // call your service to register or find user
-          const user = await AuthService.registerGoogleUser({ email, name });
+
+          let user = await UserRepository.findUserByEmail(email);
+
+          if (!user) {
+            // call your service to register or find user
+            user = await AuthService.registerGoogleUser({ email, name });
+          }
 
           // done passes the user to Passport
           return done(null, user);
